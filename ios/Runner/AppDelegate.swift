@@ -1,5 +1,6 @@
 import UIKit
 import Flutter
+import AVFoundation
 
 @UIApplicationMain
 @objc class AppDelegate: FlutterAppDelegate {
@@ -9,6 +10,11 @@ import Flutter
   ) -> Bool {
    let controller : FlutterViewController = window?.rootViewController as! FlutterViewController
          let batteryChannel = FlutterMethodChannel(name: "uCoders/battery",binaryMessenger: controller.binaryMessenger)
+         let soundPlayerChannel = FlutterMethodChannel(name: "uCoders/soundPlayer",binaryMessenger: controller.binaryMessenger)
+   var player: AVAudioPlayer?
+   let playerHandler = PlayerHandler()
+   let sound = Bundle.main.path(forResource: "YOUR_SOUND_FILE", ofType: "mp3")!
+   let url = URL(fileURLWithPath: sound)
 
    batteryChannel.setMethodCallHandler({
            (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
@@ -20,9 +26,12 @@ import Flutter
              self.receiveBatteryLevel(result: result)
          })
 
+         soundPlayerChannel.setMethodCallHandler(playerHandler.handle)
+
     GeneratedPluginRegistrant.register(with: self)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
+
   private func receiveBatteryLevel(result: FlutterResult) {
         let device = UIDevice.current
         device.isBatteryMonitoringEnabled = true
@@ -34,4 +43,26 @@ import Flutter
           result(Int(device.batteryLevel * 100))
         }
       }
+
+      func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+          switch call.method {
+          case "playSound":
+              playSound()
+              result(nil)
+          case: "stopSound":
+              stopSound()
+              result(nil)
+          default:
+              result(FlutterMethodNotImplemented)
+          }
+      }
+
+      func playSound() {
+          audioPlayer?.play()
+      }
+
+      func stopSound() {
+          audioPlayer?.stop()
+      }
+
 }

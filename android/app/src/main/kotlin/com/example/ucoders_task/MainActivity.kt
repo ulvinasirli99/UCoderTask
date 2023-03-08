@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.res.AssetManager
 import android.media.AudioAttributes
 import android.media.AudioManager
 import android.media.MediaPlayer
@@ -15,6 +16,8 @@ import android.os.BatteryManager
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
 import android.widget.Toast
+import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
 
 class MainActivity : FlutterActivity() {
@@ -60,6 +63,38 @@ class MainActivity : FlutterActivity() {
         }
 
 
+    }
+
+//    fun startPlaying(soundFile: String) {
+//        if (mediaPlayer == null) {
+//            mediaPlayer = MediaPlayer()
+//        }
+//        mediaPlayer?.reset()
+//        mediaPlayer?.setDataSource(soundFile)
+//        mediaPlayer?.prepare()
+//        mediaPlayer?.start()
+//    }
+
+    private fun copyAssetToStorage(context: Context, assetPath: String): String? {
+        val fileName = assetPath.substring(assetPath.lastIndexOf("/") + 1)
+        val file = File(context.getExternalFilesDir(null), fileName)
+        try {
+            val inputStream = context.assets.open(assetPath)
+            val outputStream = FileOutputStream(file)
+            inputStream.copyTo(outputStream)
+            inputStream.close()
+            outputStream.close()
+        } catch (e: IOException) {
+            e.printStackTrace()
+            return null
+        }
+        return file.absolutePath
+    }
+
+    fun stopPlaying() {
+        mediaPlayer?.stop()
+        mediaPlayer?.release()
+        mediaPlayer = null
     }
 
     private fun getBatteryLevel(): Int {

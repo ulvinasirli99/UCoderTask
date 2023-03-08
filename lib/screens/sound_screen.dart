@@ -28,7 +28,9 @@ class _SoundScreenState extends State<SoundScreen> {
               stopSound();
             }
           },
-          child: Text(isPlayed == false ? "Play Sound" : "Stop Sound"),
+          child: Text(
+            isPlayed == false ? "Play Sound" : "Stop Sound",
+          ),
         ),
       ),
     );
