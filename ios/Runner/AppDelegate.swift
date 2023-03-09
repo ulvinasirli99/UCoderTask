@@ -8,14 +8,16 @@ import AVFoundation
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
+      
+      
    let controller : FlutterViewController = window?.rootViewController as! FlutterViewController
          let batteryChannel = FlutterMethodChannel(name: "uCoders/battery",binaryMessenger: controller.binaryMessenger)
          let soundPlayerChannel = FlutterMethodChannel(name: "uCoders/soundPlayer",binaryMessenger: controller.binaryMessenger)
-   var player: AVAudioPlayer?
-   let playerHandler = PlayerHandler()
-   let sound = Bundle.main.path(forResource: "YOUR_SOUND_FILE", ofType: "mp3")!
-   let url = URL(fileURLWithPath: sound)
-
+//      guard let url = Bundle.main.url(forResource: "ucoder", withExtension: "mp3") else { return
+//
+//      }
+   var audioPlayer: AVAudioPlayer?
+ 
    batteryChannel.setMethodCallHandler({
            (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
 
@@ -25,10 +27,32 @@ import AVFoundation
              }
              self.receiveBatteryLevel(result: result)
          })
+      
+      soundPlayerChannel.setMethodCallHandler({
+          (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
+          if let file = Bundle.main.path(forResource: "u_coder", ofType: "mp3"){
+            
+              
+              do{
+                  audioPlayer = try AVAudioPlayer(contentsOf: URL(fileURLWithPath: file))
+              }catch{
+                  print("Error...")
+              }
+              if call.method == "playSound" {
+                  audioPlayer?.play()
+                  result(nil)
+              }else if call.method == "stopSound"{
+                  audioPlayer?.stop()
+                  result(nil)
+              }
+              else {
+                  result(FlutterMethodNotImplemented)
+                  return
+              }}
+          })
+      
 
-         soundPlayerChannel.setMethodCallHandler(playerHandler.handle)
-
-    GeneratedPluginRegistrant.register(with: self)
+      GeneratedPluginRegistrant.register(with: self)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
@@ -44,25 +68,5 @@ import AVFoundation
         }
       }
 
-      func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-          switch call.method {
-          case "playSound":
-              playSound()
-              result(nil)
-          case: "stopSound":
-              stopSound()
-              result(nil)
-          default:
-              result(FlutterMethodNotImplemented)
-          }
-      }
-
-      func playSound() {
-          audioPlayer?.play()
-      }
-
-      func stopSound() {
-          audioPlayer?.stop()
-      }
 
 }
